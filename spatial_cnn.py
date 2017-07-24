@@ -20,11 +20,10 @@ img_cols = parameter['img_cols']
 num_classes = parameter['num_classes']
 
 
-def cnn_temporal():
+def cnn_spatial():
     # img_rows = 224
     # img_cols = 224
-    # consecutive_frames = 10  # signal as L in the paper
-    img_channels = 2 * consecutive_frames
+    img_channels = 3
     input_shape = (img_rows, img_cols, img_channels)
 
     # build model
@@ -65,15 +64,15 @@ def cnn_temporal():
     return model
 
 
-def train_temporal_model(training_set):
+def train_spatial_model(training_set):
     mini_batch = 8  # 256
     epoch = 50
-    model = cnn_temporal()
+    model = cnn_spatial()
 
     # get training data
     if len(training_set) == 0:
         training_set, testing_set = get_data_set()
-    X_train = np.array(training_set['input']['temporal'])
+    X_train = np.array(training_set['input']['spatial'])
     Y_train = np.array(training_set['label'])
 
     Y_train = np_utils.to_categorical(Y_train, num_classes)
@@ -88,15 +87,15 @@ def train_temporal_model(training_set):
               shuffle=True,
               callbacks=[
                   EarlyStopping(monitor='val_loss', min_delta=0, patience=2, verbose=0, mode='auto'),
-                  ModelCheckpoint(root_path+'model/temporal_model', monitor='val_loss', verbose=0, save_best_only=False,
+                  ModelCheckpoint(root_path+'model/spatial_model', monitor='val_loss', verbose=0, save_best_only=False,
                                   save_weights_only=True, mode='auto', period=1)])
     #
     # # Potentially save weights
-    model.save_weights(root_path+'model/temporal_model', overwrite=True)
+    model.save_weights(root_path+'model/spatial_model', overwrite=True)
     print('model saved.')
     ##############################################################################################
     del model, X_train, Y_train
     gc.collect()
 
 if __name__ == "__main__":
-    train_temporal_model([])
+    train_spatial_model([])
