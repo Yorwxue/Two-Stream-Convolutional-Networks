@@ -6,8 +6,9 @@ import numpy as np
 import os
 import cv2
 import tqdm
+import time
 
-from config import get_parameter
+from config import get_parameter, time_spent_printer
 
 parameter = get_parameter()
 root_path = parameter['root_path']
@@ -106,6 +107,7 @@ def stack_optical_flow(file_directory):
 
     # -- start from pickle --
     if os.path.exists(pickle_directory+'train.pickle') and not data_update:
+        start_time = time.time()
         print('Read pickle files .. ', end='')
 
         fr = open(pickle_directory+'train.pickle', 'rb')
@@ -117,6 +119,8 @@ def stack_optical_flow(file_directory):
         fr.close()
 
         print('ok')
+        final_time = time.time()
+        time_spent_printer(start_time, final_time)
         return training_set, testing_set
 
     # -- start from raw data --

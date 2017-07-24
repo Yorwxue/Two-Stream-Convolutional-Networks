@@ -17,6 +17,7 @@ def train():
     train_temporal_model(training_set)
     gc.collect()
 
+    # release memory
     # ------------------------
     K.clear_session()
     # sess = tf.Session()
