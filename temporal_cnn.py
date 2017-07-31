@@ -1,5 +1,7 @@
 import numpy as np
 import gc
+import random
+import cPickle as pickle
 
 from keras.layers import Input, Conv2D, MaxPooling2D
 from keras.layers.core import Dense, Dropout, Flatten, Activation
@@ -20,7 +22,7 @@ img_cols = parameter['img_cols']
 num_classes = parameter['num_classes']
 
 
-def cnn_temporal():
+def cnn_temporal(lr):
     # img_rows = 224
     # img_cols = 224
     # consecutive_frames = 10  # signal as L in the paper
@@ -58,45 +60,92 @@ def cnn_temporal():
 
     model['sofemax'] = Activation('softmax')(model['output'])
 
-    sgd = optimizers.SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=0.1)
+    sgd = optimizers.SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=0.1)
     model = Model(inputs=model['input'], outputs=model['sofemax'])
     model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 
     return model
 
 
-def train_temporal_model(training_set):
-    mini_batch = 8  # 256
-    epoch = 50
-    model = cnn_temporal()
+def train_temporal_model(class_index_dict, seed):
+    batch_size = parameter['batch_size']
+    iterations = parameter['iterations']
 
-    # get training data
-    if len(training_set) == 0:
-        training_set, testing_set = get_data_set()
-    X_train = np.array(training_set['input']['temporal'])
-    Y_train = np.array(training_set['label'])
-
-    Y_train = np_utils.to_categorical(Y_train, num_classes)
-
-    ##############################################################################################
     print('Start training.')
-    model.fit(X_train, Y_train,
-              batch_size=mini_batch,
-              epochs=epoch,
-              # validation_data=(X_valid, Y_valid),
-              validation_split=0.01, validation_data=None,
-              shuffle=True,
-              callbacks=[
-                  EarlyStopping(monitor='val_loss', min_delta=0, patience=2, verbose=0, mode='auto'),
-                  ModelCheckpoint(root_path+'model/temporal_model', monitor='val_loss', verbose=0, save_best_only=False,
-                                  save_weights_only=True, mode='auto', period=1)])
-    #
+    # get testing set
+    # -------------------------------------------------------
+    testing_set = get_data_set(class_index_dict, seed, 0, mini_batch=256, kind='test')
+    # testing_set = get_data_set_ver2(class_index_dict, mini_batch=256, kind_of_data='temporal', kind_of_set='test')
+    X_test = np.array(testing_set['input']['temporal'])
+    # X_test = np.array(testing_set['input'])
+    Y_test = np.array(testing_set['label'], dtype=np.float32)
+
+    Y_test = np_utils.to_categorical(Y_test, num_classes)
+    # -------------------------------------------------------
+
+    for i in range(iterations):
+        print('%dth iterations' % (i+1))
+
+        # load model
+        # ---------------------------------------------------------
+        if i == 0:
+            model = cnn_temporal(1e-2)
+        if i == 14000:
+            del model
+            model = cnn_temporal(1e-3)
+            model.load_weights(root_path + 'model/temporal_model')
+        # ---------------------------------------------------------
+
+        # get training data
+        # -------------------------------------------------------
+        training_set = get_data_set(class_index_dict, seed, i, mini_batch=256, kind='train')
+        # training_set = get_data_set_ver2(class_index_dict, mini_batch=256, kind_of_data='temporal', kind_of_set='train')
+        X_train = np.array(training_set['input']['temporal'])
+        # X_train = np.array(training_set['input'])
+        Y_train = np.array(training_set['label'], dtype=np.float32)
+
+        Y_train = np_utils.to_categorical(Y_train, num_classes)
+        # -------------------------------------------------------
+
+        model.fit(X_train, Y_train,
+                  batch_size=batch_size,
+                  epochs=1,
+                  # validation_data=(X_valid, Y_valid),
+                  # validation_split=0.01, validation_data=None,
+                  shuffle=True
+                  # callbacks=[
+                  #     EarlyStopping(monitor='val_loss', min_delta=0, patience=2, verbose=0, mode='auto'),
+                  #     ModelCheckpoint(root_path+'model/temporal_model', monitor='val_loss', verbose=0,
+                  #                     save_best_only=False, save_weights_only=True, mode='auto', period=1)]
+                  )
+
+        # evaluate
+        # -----------------------------------------------------------
+        pred = model.predict(X_test, batch_size=batch_size)
+        pred = np.array([np.argmax(i) for i in pred])
+        print('accuracy: %.5f' % (np.sum(pred == Y_test) / len(Y_test)))
+        # -----------------------------------------------------------
+
+        model.save_weights(root_path + 'model/temporal_model', overwrite=True)
+
     # # Potentially save weights
     model.save_weights(root_path+'model/temporal_model', overwrite=True)
     print('model saved.')
-    ##############################################################################################
+
+    # evaluate
+    # -----------------------------------------------------------
+    pred = model.predict(X_test, batch_size=batch_size)
+    pred = np.array([np.argmax(i) for i in pred])
+    print('accuracy: %.5f' % (np.sum(pred == Y_test)/len(Y_test)))
+    # -----------------------------------------------------------
+
     del model, X_train, Y_train
     gc.collect()
 
 if __name__ == "__main__":
-    train_temporal_model([])
+    pickle_directory = parameter['pickle_directory']
+    with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
+        class_index_dict = pickle.load(fr)
+    num_of_classes = len(class_index_dict) / 2
+    seed = [random.random() for i in range(num_of_classes)]
+    train_temporal_model(class_index_dict, seed)
