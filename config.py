@@ -20,6 +20,8 @@ parameter['file_directory'] = parameter['file_root_path'] + 'dataset/UCF101/'
 parameter['pickle_directory'] = parameter['file_root_path'] + 'dataset/pickle/'
 parameter['index_directory'] = parameter['root_path'] + 'dataset/ucfTrainTestlist/'
 
+parameter['split_selection'] = '01'  # '01', '02', '03'
+
 
 def get_parameter():
     return parameter

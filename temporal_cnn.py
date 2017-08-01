@@ -8,10 +8,10 @@ from keras.layers.core import Dense, Dropout, Flatten, Activation
 from keras.layers.normalization import BatchNormalization
 from keras import optimizers
 from keras.models import Model
-from keras.callbacks import ModelCheckpoint, EarlyStopping
+# from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.utils import np_utils
 
-from stream_data import get_data_set
+from stream_data import get_data_set, data_set
 from config import get_parameter
 
 parameter = get_parameter()
@@ -72,13 +72,17 @@ def train_temporal_model(class_index_dict, seed):
     iterations = parameter['iterations']
 
     print('Start training.')
-    # get testing set
+    # get data set
     # -------------------------------------------------------
-    testing_set = get_data_set(class_index_dict, seed, 0, mini_batch=256, kind='test')
-    # testing_set = get_data_set_ver2(class_index_dict, mini_batch=256, kind_of_data='temporal', kind_of_set='test')
-    X_test = np.array(testing_set['input']['temporal'])
-    # X_test = np.array(testing_set['input'])
-    Y_test = np.array(testing_set['label'], dtype=np.float32)
+    # training set
+    training_set = data_set(class_index_dict, kind='train')
+
+    # testing set
+    # testing_set = get_data_set(class_index_dict, seed, 0, mini_batch=256, kind='test')
+    testing_set = data_set(class_index_dict, kind='test')
+    test_minibatch = testing_set.get_minibatch(seed, 0, mini_batch=256)
+    X_test = np.array(test_minibatch['input']['temporal'])
+    Y_test = np.array(test_minibatch['label'], dtype=np.float32)
 
     Y_test = np_utils.to_categorical(Y_test, num_classes)
     # -------------------------------------------------------
@@ -98,11 +102,10 @@ def train_temporal_model(class_index_dict, seed):
 
         # get training data
         # -------------------------------------------------------
-        training_set = get_data_set(class_index_dict, seed, i, mini_batch=256, kind='train')
-        # training_set = get_data_set_ver2(class_index_dict, mini_batch=256, kind_of_data='temporal', kind_of_set='train')
-        X_train = np.array(training_set['input']['temporal'])
-        # X_train = np.array(training_set['input'])
-        Y_train = np.array(training_set['label'], dtype=np.float32)
+        # training_set = get_data_set(class_index_dict, seed, i, mini_batch=256, kind='train')
+        train_minibatch = training_set.get_minibatch(seed, i, mini_batch=256)
+        X_train = np.array(train_minibatch['input']['temporal'])
+        Y_train = np.array(train_minibatch['label'], dtype=np.float32)
 
         Y_train = np_utils.to_categorical(Y_train, num_classes)
         # -------------------------------------------------------

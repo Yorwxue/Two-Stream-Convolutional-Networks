@@ -23,6 +23,7 @@ pickle_directory = parameter['pickle_directory']
 index_directory = parameter['index_directory']
 
 sample_freq_of_motion = parameter['sample_freq_of_motion']
+split_selection = parameter['split_selection']
 
 # file_name = 'v_Archery_g01_c07.avi'
 # file_name = 'v_Skiing_g21_c01.avi'
@@ -343,113 +344,203 @@ def get_data_set(class_index_dict, seed, sample_times, mini_batch=256, kind='tra
 
     return data_set
 
-"""
-def get_data_set_ver2(class_index_dict, mini_batch=256, kind_of_data='temporal',
-                      kind_of_set='train', data_update=False):
+
+class data_set:
     # seed: shuffle seed
     # sample_times: which times of sampling
     # mini_batch: return how many data
     # kind: train/test
     data_set = dict()
-    data_set['input'] = list()
-    data_set['label'] = list()
 
-    while True:
-        if kind_of_set != 'train' and kind_of_set != 'test':
-            print("kind of set must be 'train' or 'test'.")
-            kind_of_set = input('type in again.(train/test)')
-        else:
-            break
-
-    while True:
-        if kind_of_data !='temporal' and kind_of_data != 'spatial':
-            print("kind of data must be 'temporal' or 'spatial'.")
-            kind_of_data = input('type in again.(temporal/spatial)')
-        else:
-            break
-
-    # data split of training/testing
-    # ----------------------------------------------------------------------
-    data_index = dict()
-    data_index['name'] = list()
-    # data_index['label'] = list()
-
-    data_files_list = ['%slist01.txt' % kind_of_set, '%slist02.txt' % kind_of_set, '%slist03.txt' % kind_of_set]
-
-    for data_file in data_files_list:
-        with open(index_directory + '%s' % data_file, 'r') as fr:
-            lines = fr.readlines()
-            data_index['name'] += [entry.split(' ')[0][entry.split(' ')[0].index('/') + 1:].replace('\r\n', '') for entry in lines]
-    # ----------------------------------------------------------------------
-
-    print('Prepare data set(%s).' % kind_of_set)
-    start_time = time.time()
-    for i in tqdm.tqdm(range(mini_batch)):
-        # Allocate input data to temporal and spatial set
-        # ------------------------------------------------
-        def allocate_input_data(video_file):
-            index = 0
-            temporal_input_list = list()
-            spatial_input_list = list()
-
-            frame_input = create_optical_flow(video_file, sample_freq_of_motion)
-            frame_input_len = np.min([len(frame_input['hori']), len(frame_input['vert'])])  # length should be the same
-            for i in range(frame_input_len):
-                if int(index + consecutive_frames) >= frame_input_len:
-                    break
-                temporal_input = np.dstack(frame_input['hori'][index:index + consecutive_frames] +
-                                           frame_input['vert'][index:index + consecutive_frames])
-                spatial_input = frame_input['orig'][int(index + consecutive_frames // 2)]
-                index += consecutive_frames
-
-                temporal_input_list.append(temporal_input)
-                spatial_input_list.append(spatial_input)
-            return temporal_input_list, spatial_input_list
-        # ------------------------------------------------
-
-        # sample which video
-        sample_list = np.arange(len(data_index['name']))[0:mini_batch]
-        np.random.shuffle(sample_list)
-        # sample_list = np.random.randint(0, len(data_index['name']), mini_batch)
-
-        # video process
-        temporal_input_list, spatial_input_list = allocate_input_data(file_directory + data_index['name'][sample_list[i]])
-
-        input_length = np.min([len(temporal_input_list), len(spatial_input_list)])  # length should be the same
-
-        # Randomly select one data from this video
-        try:
-            selection = np.random.randint(0, 999) % len(input_length)
-            if kind_of_data == 'temporal':
-                data_set['input'].append(temporal_input_list[selection])
+    def __init__(self, class_index_dict, kind='train'):
+        while True:
+            if kind != 'train' and kind != 'test':
+                print("kind must be 'train' or 'test'.")
+                kind = input('type in again.(train/test)')
             else:
-                data_set['input'].append(spatial_input_list[selection])
+                break
 
-            data_set['label'].append(class_index_dict[
-                                         data_index['name'][sample_list[i]].split('_')[1]  # class name
-                                     ]-1)  # start from 0
-        except:
-            None
+        # data split of training/testing
+        # ----------------------------------------------------------------------
+        # data_index: all names of videos in the training/testing set, ex: 'v_Archery_g01_c07.avi'
+        data_index = dict()
+        data_index['name'] = list()
 
+        data_files_list = ['%slist%s.txt' % (kind, split_selection)]
+
+        for data_file in data_files_list:
+            with open(index_directory + '%s' % data_file, 'r') as fr:
+                lines = fr.readlines()
+                data_index['name'] += [entry.split(' ')[0][entry.split(' ')[0].index('/') + 1:].replace('\r\n', '') for entry in lines]
+        # ----------------------------------------------------------------------
+
+        # start_time = time.time()
+        for i in tqdm.tqdm(range(len(data_index['name']))):
+            # Reading pickle
+            # -------------------------------------------------------------------------------
+            with open(pickle_directory+'classes_of_videos_dict.pickle', 'rb') as fr:
+                self.classes_of_videos_dict = pickle.load(fr)
+
+            with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
+                self.class_index_dict = pickle.load(fr)
+            # -------------------------------------------------------------------------------
+
+            # read videos
+            # --------------------------
+            video_name = data_index['name'][i]
+            class_name = video_name.split('_')[1]
+            with open(pickle_directory + '%s.pickle' % video_name, 'rb') as fr:
+                video = pickle.load(fr)
+            # --------------------------
+
+            # Collect data
+            # ----------------------------------------------------------------------
+            temporal_data_set = video['input']['temporal']
+            spatial_data_set = video['input']['spatial']
+            data_label = int(class_index_dict[class_name]) - 1  # start from 0
+            # ----------------------------------------------------------------------
+
+            # create data set
+            # -------------------------------------
+            if class_name not in self.data_set:
+                self.data_set[class_name] = dict()
+            if 'input' not in self.data_set[class_name]:
+                self.data_set[class_name]['input'] = dict()
+            if 'temporal' not in self.data_set[class_name]['input']:
+                self.data_set[class_name]['input']['temporal'] = list()
+            if 'spatial' not in self.data_set[class_name]['input']:
+                self.data_set[class_name]['input']['spatial'] = list()
+            if 'label' not in self.data_set[class_name]:
+                self.data_set[class_name]['label'] = data_label
+            # -------------------------------------
+
+            # Randomly select one data from this video
+            # ----------------------------------------------------------------------
+            self.data_set[class_name]['input']['temporal'].append(temporal_data_set)
+            self.data_set[class_name]['input']['spatial'].append(spatial_data_set)
+            # ----------------------------------------------------------------------
+            # only for test
+            # if i > 500:
+            #     break
         gc.collect()
 
-    end_time = time.time()
-    time_spent_printer(start_time, end_time)
+    def get_minibatch(self, seed, sample_times, mini_batch=256):
+        # data collector
+        num_of_classes = len(class_index_dict) / 2
+        num_of_samples_of_each_class = mini_batch // num_of_classes
+        num_of_samples_of_remaining = mini_batch % num_of_classes
+        samples_of_remaining = np.random.randint(0, num_of_classes, num_of_samples_of_remaining)
 
-    return data_set
-"""
+        get_data = dict()
+        get_data['input'] = dict()
+        get_data['input']['temporal'] = list()
+        get_data['input']['spatial'] = list()
+        get_data['label'] = list()
+
+        for i in tqdm.tqdm(range(num_of_classes)):
+            class_name = self.class_index_dict[str(i + 1)]
+
+            # Select videos
+            # ---------------------------------------------------------------------------
+            sample_list_of_this_class = np.arange(len(self.data_set[class_name]['input']['temporal']))
+            # np.random.shuffle(sample_list)
+            #
+            # video_list_of_same_class = self.classes_of_videos_dict[class_index_dict[str(i + 1)]]
+            # video_list_of_same_class = sorted(video_list_of_same_class)
+            random.shuffle(sample_list_of_this_class, lambda: seed[i])
+            # ---------------------------------------------------------------------------
+
+            # Samples from each class
+            # --------------------------------------------------------------------------
+            for j in range(num_of_samples_of_each_class):
+                # Select one video
+                # ----------------------------------------------------------------------
+                video_selection = j + sample_times * num_of_samples_of_each_class
+                if video_selection >= len(sample_list_of_this_class):
+                    video_selection = np.random.randint(0, len(sample_list_of_this_class))
+                else:
+                    video_selection = sample_list_of_this_class[video_selection]
+
+                # video_name = video_list_of_same_class[video_selection]
+                #
+                # with open(pickle_directory + '%s.pickle' % video_name, 'rb') as fr:
+                #     video = pickle.load(fr)
+                # ----------------------------------------------------------------------
+
+                # Collect data
+                # ----------------------------------------------------------------------
+                temporal_data_set = self.data_set[class_name]['input']['temporal'][video_selection]
+                spatial_data_set = self.data_set[class_name]['input']['spatial'][video_selection]
+                data_label = self.data_set[class_name]['label']
+                # ----------------------------------------------------------------------
+
+                # Randomly select one data from this video
+                # ----------------------------------------------------------------------
+                try:
+                    selection = np.random.randint(0, 999) % len(temporal_data_set)
+
+                    get_data['input']['temporal'].append(temporal_data_set[selection])
+                    get_data['input']['spatial'].append(spatial_data_set[selection])
+                    get_data['label'].append(data_label)
+                except:
+                    None
+                    # ----------------------------------------------------------------------
+            # --------------------------------------------------------------------------
+
+            # Random sample
+            # -------------------------------------------
+            while i in samples_of_remaining:
+                samples_of_remaining.pop(i)
+
+                # Randomly select one video
+                # ----------------------------------------------------------------------
+                random_selection = np.random.randint(0, len(sample_list_of_this_class))
+                # video_name = video_list_of_same_class[random_select]
+                # with open(pickle_directory + '%s.pickle' % video_name, 'rb') as fr:
+                #     video = pickle.load(fr)
+                # ----------------------------------------------------------------------
+
+                # Collect data
+                # ----------------------------------------------------------------------
+                temporal_data_set = self.data_set[class_name]['input']['temporal'][random_selection]
+                spatial_data_set = self.data_set[class_name]['input']['spatial'][random_selection]
+                data_label = int(self.data_set[class_name]['label']) - 1  # start from 0
+                # ----------------------------------------------------------------------
+
+                # Randomly select one data from this video
+                # ----------------------------------------------------------------------
+                try:
+                    selection = np.random.randint(0, 999) % len(temporal_data_set)
+
+                    get_data['input']['temporal'].append(temporal_data_set[selection])
+                    get_data['input']['spatial'].append(spatial_data_set[selection])
+                    get_data['label'].append(data_label)
+                except:
+                    None
+                    # ----------------------------------------------------------------------
+            # -------------------------------------------
+        gc.collect()
+        return get_data
+
 
 if __name__ == "__main__":
     # create_optical_flow(file_directory+file_name)
 
-    stack_optical_flow(file_directory, data_update=data_update)
 
-    # with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
-    #     class_index_dict = pickle.load(fr)
-    # num_of_classes = len(class_index_dict) / 2
-    # seed = [random.random() for i in range(num_of_classes)]
+    # stack_optical_flow(file_directory, data_update=data_update)  #create pickle for training and testing
+
+
+    with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
+        class_index_dict = pickle.load(fr)
+    num_of_classes = len(class_index_dict) / 2
+    seed = [random.random() for i in range(num_of_classes)]
+
+    # ver 1
     # get_data_set(class_index_dict, seed, 0)
 
-    # with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
-    #     class_index_dict = pickle.load(fr)
+    # ver 2
     # get_data_set_ver2(class_index_dict)
+
+    # ver .
+    a = data_set(class_index_dict, kind='train')
+    a.get_minibatch(seed, 0)
