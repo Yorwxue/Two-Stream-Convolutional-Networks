@@ -433,6 +433,7 @@ class data_set:
         num_of_samples_of_each_class = mini_batch // num_of_classes
         num_of_samples_of_remaining = mini_batch % num_of_classes
         samples_of_remaining = np.random.randint(0, num_of_classes, num_of_samples_of_remaining)
+        samples_of_remaining = samples_of_remaining.tolist()
 
         get_data = dict()
         get_data['input'] = dict()
@@ -490,7 +491,7 @@ class data_set:
             # Random sample
             # -------------------------------------------
             while i in samples_of_remaining:
-                samples_of_remaining.pop(i)
+                samples_of_remaining.pop(samples_of_remaining.index(i))
 
                 # Randomly select one video
                 # ----------------------------------------------------------------------
