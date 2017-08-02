@@ -400,7 +400,7 @@ class data_set:
             # ----------------------------------------------------------------------
             temporal_data_set = video['input']['temporal']
             spatial_data_set = video['input']['spatial']
-            data_label = int(class_index_dict[class_name]) - 1  # start from 0
+            data_label = int(self.class_index_dict[class_name]) - 1  # start from 0
             # ----------------------------------------------------------------------
 
             # create data set
@@ -429,7 +429,7 @@ class data_set:
 
     def get_minibatch(self, seed, sample_times, mini_batch=256):
         # data collector
-        num_of_classes = len(class_index_dict) / 2
+        num_of_classes = len(self.class_index_dict) / 2
         num_of_samples_of_each_class = mini_batch // num_of_classes
         num_of_samples_of_remaining = mini_batch % num_of_classes
         samples_of_remaining = np.random.randint(0, num_of_classes, num_of_samples_of_remaining)
