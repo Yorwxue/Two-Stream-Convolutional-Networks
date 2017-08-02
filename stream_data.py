@@ -389,8 +389,11 @@ class data_set:
             # --------------------------
             video_name = data_index['name'][i]
             class_name = video_name.split('_')[1]
-            with open(pickle_directory + '%s.pickle' % video_name, 'rb') as fr:
-                video = pickle.load(fr)
+            try:
+                with open(pickle_directory + '%s.pickle' % video_name, 'rb') as fr:
+                    video = pickle.load(fr)
+            except:
+                continue
             # --------------------------
 
             # Collect data
@@ -476,15 +479,12 @@ class data_set:
 
                 # Randomly select one data from this video
                 # ----------------------------------------------------------------------
-                try:
-                    selection = np.random.randint(0, 999) % len(temporal_data_set)
+                selection = np.random.randint(0, 999) % len(temporal_data_set)
 
-                    get_data['input']['temporal'].append(temporal_data_set[selection])
-                    get_data['input']['spatial'].append(spatial_data_set[selection])
-                    get_data['label'].append(data_label)
-                except:
-                    None
-                    # ----------------------------------------------------------------------
+                get_data['input']['temporal'].append(temporal_data_set[selection])
+                get_data['input']['spatial'].append(spatial_data_set[selection])
+                get_data['label'].append(data_label)
+                # ----------------------------------------------------------------------
             # --------------------------------------------------------------------------
 
             # Random sample
@@ -509,15 +509,12 @@ class data_set:
 
                 # Randomly select one data from this video
                 # ----------------------------------------------------------------------
-                try:
-                    selection = np.random.randint(0, 999) % len(temporal_data_set)
+                selection = np.random.randint(0, 999) % len(temporal_data_set)
 
-                    get_data['input']['temporal'].append(temporal_data_set[selection])
-                    get_data['input']['spatial'].append(spatial_data_set[selection])
-                    get_data['label'].append(data_label)
-                except:
-                    None
-                    # ----------------------------------------------------------------------
+                get_data['input']['temporal'].append(temporal_data_set[selection])
+                get_data['input']['spatial'].append(spatial_data_set[selection])
+                get_data['label'].append(data_label)
+                # ----------------------------------------------------------------------
             # -------------------------------------------
         gc.collect()
         return get_data

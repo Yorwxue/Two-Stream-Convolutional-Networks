@@ -4,8 +4,8 @@ from __future__ import print_function
 import os
 
 parameter = dict()
-parameter['root_path'] = '/media/clliao/006a3168-df49-4b0a-a874-891877a88870/clliao/workspace/python/two_stream_conv/'
-parameter['file_root_path'] = '/media/clliao/9c88dfb2-c12d-48cc-b30b-eaffb0cbf545/'
+parameter['root_path'] = '/home/csist/clliao/workspace/Two-Stream-Convolutional-Networks/'
+parameter['file_root_path'] = '/home/csist/clliao/dataset/'
 
 parameter['consecutive_frames'] = 10  # signal as L in the paper
 parameter['img_rows'] = 224
@@ -13,12 +13,12 @@ parameter['img_cols'] = 224
 parameter['num_classes'] = 101
 parameter['sample_freq_of_motion'] = 5
 
-parameter['batch_size'] = 8  # 256
+parameter['batch_size'] = 256
 parameter['iterations'] = 20000
 
-parameter['file_directory'] = parameter['file_root_path'] + 'dataset/UCF101/'
-parameter['pickle_directory'] = parameter['file_root_path'] + 'dataset/pickle/'
-parameter['index_directory'] = parameter['root_path'] + 'dataset/ucfTrainTestlist/'
+parameter['file_directory'] = parameter['file_root_path'] + 'UCF101/'
+parameter['pickle_directory'] = parameter['file_root_path'] + 'pickle/'
+parameter['index_directory'] = parameter['file_root_path'] + 'ucfTrainTestlist/'
 
 parameter['split_selection'] = '01'  # '01', '02', '03'
 
