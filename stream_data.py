@@ -488,10 +488,11 @@ class data_set:
                     get_data['label'].append(data_label)
                     # ----------------------------------------------------------------------
                 except:
-                    print('class name: %s' % class_name)
-                    print('selection of data of this video: %d' % video_selection)
-                    print('number of data of this video: %d' % len(temporal_data_set))
-                    input('push any key to continue.')
+                    # print('class name: %s' % class_name)
+                    # print('selection of data of this video: %d' % video_selection)
+                    # print('number of data of this video: %d' % len(temporal_data_set))
+                    # input('push any key to continue.')
+                    None
             # --------------------------------------------------------------------------
 
             # Random sample
@@ -507,21 +508,28 @@ class data_set:
                 #     video = pickle.load(fr)
                 # ----------------------------------------------------------------------
 
-                # Collect data
-                # ----------------------------------------------------------------------
-                temporal_data_set = self.data_set[class_name]['input']['temporal'][random_selection]
-                spatial_data_set = self.data_set[class_name]['input']['spatial'][random_selection]
-                data_label = int(self.data_set[class_name]['label']) - 1  # start from 0
-                # ----------------------------------------------------------------------
+                try:
+                    # Collect data
+                    # ----------------------------------------------------------------------
+                    temporal_data_set = self.data_set[class_name]['input']['temporal'][random_selection]
+                    spatial_data_set = self.data_set[class_name]['input']['spatial'][random_selection]
+                    data_label = int(self.data_set[class_name]['label']) - 1  # start from 0
+                    # ----------------------------------------------------------------------
 
-                # Randomly select one data from this video
-                # ----------------------------------------------------------------------
-                selection = np.random.randint(0, 999) % len(temporal_data_set)
+                    # Randomly select one data from this video
+                    # ----------------------------------------------------------------------
+                    selection = np.random.randint(0, 999) % len(temporal_data_set)
 
-                get_data['input']['temporal'].append(temporal_data_set[selection])
-                get_data['input']['spatial'].append(spatial_data_set[selection])
-                get_data['label'].append(data_label)
-                # ----------------------------------------------------------------------
+                    get_data['input']['temporal'].append(temporal_data_set[selection])
+                    get_data['input']['spatial'].append(spatial_data_set[selection])
+                    get_data['label'].append(data_label)
+                    # ----------------------------------------------------------------------
+                except:
+                    # print('class name: %s' % class_name)
+                    # print('selection of data of this video: %d' % video_selection)
+                    # print('number of data of this video: %d' % len(temporal_data_set))
+                    # input('push any key to continue.')
+                    None
             # -------------------------------------------
         gc.collect()
         return get_data
