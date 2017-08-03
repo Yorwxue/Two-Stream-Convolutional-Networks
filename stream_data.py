@@ -375,8 +375,9 @@ class data_set:
 
                 # a bug of data set split provided by UCF101
                 # ----------------------------------------------------------------------
-                if 'HandStandPushups' in data_index['name']:
-                    data_index['name'].replace('HandStandPushups', 'HandstandPushups')
+                for check_name in range(len(data_index['name'])):
+                    if 'HandStandPushups' in data_index['name'][check_name]:
+                        data_index['name'][check_name].replace('HandStandPushups', 'HandstandPushups')
                 # ----------------------------------------------------------------------
         # ----------------------------------------------------------------------
 
