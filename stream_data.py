@@ -389,11 +389,11 @@ class data_set:
             # --------------------------
             video_name = data_index['name'][i]
             class_name = video_name.split('_')[1]
-            try:
-                with open(pickle_directory + '%s.pickle' % video_name, 'rb') as fr:
-                    video = pickle.load(fr)
-            except:
-                continue
+            # try:
+            with open(pickle_directory + '%s.pickle' % video_name, 'rb') as fr:
+                video = pickle.load(fr)
+            # except:
+            #     continue
             # --------------------------
 
             # Collect data
