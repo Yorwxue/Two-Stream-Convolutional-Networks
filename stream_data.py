@@ -425,6 +425,7 @@ class data_set:
             # only for test
             # if i > 500:
             #     break
+            print(data_set.keys())
         gc.collect()
 
     def get_minibatch(self, seed, sample_times, mini_batch=256):
@@ -446,10 +447,7 @@ class data_set:
 
             # Select videos
             # ---------------------------------------------------------------------------
-            try:
-                sample_list_of_this_class = np.arange(len(self.data_set[class_name]['input']['temporal']))
-            except:
-                print('class_name: %s' % class_name)
+            sample_list_of_this_class = np.arange(len(self.data_set[class_name]['input']['temporal']))
             # np.random.shuffle(sample_list)
             #
             # video_list_of_same_class = self.classes_of_videos_dict[class_index_dict[str(i + 1)]]
