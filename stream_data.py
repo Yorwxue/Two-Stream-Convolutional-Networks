@@ -372,6 +372,12 @@ class data_set:
             with open(index_directory + '%s' % data_file, 'r') as fr:
                 lines = fr.readlines()
                 data_index['name'] += [entry.split(' ')[0][entry.split(' ')[0].index('/') + 1:].replace('\r\n', '') for entry in lines]
+
+                # a bug of data set split provided by UCF101
+                # ------
+                if 'HandStandPushups' in data_index['name']:
+                    data_index['name'].replace('HandStandPushups', 'HandstandPushups')
+                # ------
         # ----------------------------------------------------------------------
 
         # Reading pickle
@@ -425,6 +431,7 @@ class data_set:
             # only for test
             # if i > 500:
             #     break
+        # only for test
         # print(len(self.data_set.keys()))
         # print(self.data_set.keys())
         gc.collect()
