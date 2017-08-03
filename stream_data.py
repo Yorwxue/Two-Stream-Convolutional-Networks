@@ -425,8 +425,8 @@ class data_set:
             # only for test
             # if i > 500:
             #     break
-        print(len(self.data_set.keys()))
-        print(self.data_set.keys())
+        # print(len(self.data_set.keys()))
+        # print(self.data_set.keys())
         gc.collect()
 
     def get_minibatch(self, seed, sample_times, mini_batch=256):
