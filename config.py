@@ -36,14 +36,16 @@ def time_spent_printer(start_time, final_time):
 
 
 def set_parameter():
-    if not os.path.exists(parameter['root_path']+'dataset'):
-        os.mkdir('dataset')
+    # if not os.path.exists(parameter['root_path']+'dataset'):
+    #     os.mkdir('dataset')
     # if not os.path.exists(parameter['file_directory']):
     #     os.mkdir('dataset/UCF101')
     if not os.path.exists(parameter['pickle_directory']):
-        os.mkdir('dataset/pickle')
+        os.mkdir(parameter['pickle_directory'])
     if not os.path.exists(parameter['index_directory']):
-        os.mkdir('dataset/ucfTrainTestlist')
+        os.mkdir(parameter['index_directory'])
+    if not os.path.exists(parameter['root_path'] + 'model'):
+        os.mkdir(parameter['root_path'] + 'model')
 
 
 if __name__ == "__main__":
