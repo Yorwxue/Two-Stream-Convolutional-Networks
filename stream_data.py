@@ -377,7 +377,7 @@ class data_set:
                 # ----------------------------------------------------------------------
                 for check_name in range(len(data_index['name'])):
                     if 'HandStandPushups' in data_index['name'][check_name]:
-                        data_index['name'][check_name].replace('HandStandPushups', 'HandstandPushups')
+                        data_index['name'][check_name] = data_index['name'][check_name].replace('HandStandPushups', 'HandstandPushups')
                 # ----------------------------------------------------------------------
         # ----------------------------------------------------------------------
 
