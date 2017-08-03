@@ -374,17 +374,17 @@ class data_set:
                 data_index['name'] += [entry.split(' ')[0][entry.split(' ')[0].index('/') + 1:].replace('\r\n', '') for entry in lines]
         # ----------------------------------------------------------------------
 
+        # Reading pickle
+        # -------------------------------------------------------------------------------
+        with open(pickle_directory + 'classes_of_videos_dict.pickle', 'rb') as fr:
+            self.classes_of_videos_dict = pickle.load(fr)
+
+        with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
+            self.class_index_dict = pickle.load(fr)
+            # -------------------------------------------------------------------------------
+
         # start_time = time.time()
         for i in tqdm.tqdm(range(len(data_index['name']))):
-            # Reading pickle
-            # -------------------------------------------------------------------------------
-            with open(pickle_directory+'classes_of_videos_dict.pickle', 'rb') as fr:
-                self.classes_of_videos_dict = pickle.load(fr)
-
-            with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
-                self.class_index_dict = pickle.load(fr)
-            # -------------------------------------------------------------------------------
-
             # read videos
             # --------------------------
             video_name = data_index['name'][i]
