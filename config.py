@@ -13,7 +13,7 @@ parameter['img_cols'] = 224
 parameter['num_classes'] = 101
 parameter['sample_freq_of_motion'] = 5
 
-parameter['batch_size'] = 256
+parameter['batch_size'] = 64
 parameter['iterations'] = 20000
 
 parameter['file_directory'] = parameter['file_root_path'] + 'UCF101/'
