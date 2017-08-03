@@ -425,6 +425,7 @@ class data_set:
             # only for test
             # if i > 500:
             #     break
+        print(len(self.data_set.keys()))
         print(self.data_set.keys())
         gc.collect()
 
