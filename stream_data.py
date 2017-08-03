@@ -374,10 +374,10 @@ class data_set:
                 data_index['name'] += [entry.split(' ')[0][entry.split(' ')[0].index('/') + 1:].replace('\r\n', '') for entry in lines]
 
                 # a bug of data set split provided by UCF101
-                # ------
+                # ----------------------------------------------------------------------
                 if 'HandStandPushups' in data_index['name']:
                     data_index['name'].replace('HandStandPushups', 'HandstandPushups')
-                # ------
+                # ----------------------------------------------------------------------
         # ----------------------------------------------------------------------
 
         # Reading pickle
