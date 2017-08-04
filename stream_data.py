@@ -83,9 +83,11 @@ def create_optical_flow(video_file, sample_freq_of_motion):
 
             # horizontal & vertical
             # frame_set['hori'].append(frame_set['flow'][-1][..., 0])
-            frame_set['hori'].append(frame_set['flow'][-1][..., 0] - cv2.mean(frame_set['flow'][-1][..., 0])[0])
+            frame_set['hori'].append(frame_set['flow'][-1][..., 0] -
+                                     cv2.mean(frame_set['flow'][-1][..., 0])[0] * np.ones(frame_set['flow'][-1][..., 0].shape))
             # frame_set['vert'].append(frame_set['flow'][-1][..., 1])
-            frame_set['vert'].append(frame_set['flow'][-1][..., 1] - cv2.mean(frame_set['flow'][-1][..., 1])[0])
+            frame_set['vert'].append(frame_set['flow'][-1][..., 1] -
+                                     cv2.mean(frame_set['flow'][-1][..., 1])[0] * np.ones(frame_set['flow'][-1][..., 1].shape))
 
             # change range to 0~255
             # frame_set['hori'][-1] = cv2.normalize(frame_set['hori'][-1], None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
