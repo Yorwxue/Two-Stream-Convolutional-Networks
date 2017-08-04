@@ -145,7 +145,7 @@ def stack_optical_flow(file_directory, data_update=False):
                 if file_name not in classes_of_videos_dict[class_name]:
                     classes_of_videos_dict[class_name].append(file_name)
 
-                if not data_update and file_name in pickle_list:
+                if not data_update and (file_name + '.pickle') in pickle_list:
                     continue
 
                 video = dict()
