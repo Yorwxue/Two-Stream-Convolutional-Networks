@@ -4,8 +4,8 @@ from __future__ import print_function
 import os
 
 parameter = dict()
-parameter['root_path'] = '/home/csist/clliao/workspace/Two-Stream-Convolutional-Networks/'
-parameter['file_root_path'] = '/home/csist/clliao/dataset/'
+parameter['root_path'] = '/home/csist/clliao/workspace/Two-Stream-Convolutional-Networks/'  # /media/clliao/006a3168-df49-4b0a-a874-891877a88870/clliao/workspace/python/two_stream_conv/
+parameter['file_root_path'] = '/home/csist/clliao/dataset/'  # '/media/clliao/9c88dfb2-c12d-48cc-b30b-eaffb0cbf545/dataset/'
 
 parameter['consecutive_frames'] = 10  # signal as L in the paper
 parameter['img_rows'] = 224

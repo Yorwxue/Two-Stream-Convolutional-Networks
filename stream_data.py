@@ -557,12 +557,12 @@ if __name__ == "__main__":
     num_of_classes = len(class_index_dict) / 2
     seed = [random.random() for i in range(num_of_classes)]
 
-    # ver 1
+    # ver 1 pickle of video
     # get_data_set(class_index_dict, seed, 0)
 
-    # ver 2
+    # ver 2 pickle of class
     # get_data_set_ver2(class_index_dict)
 
-    # ver .
+    # ver 3 server version
     a = data_set(class_index_dict, kind='train')
     a.get_minibatch(seed, 0)
