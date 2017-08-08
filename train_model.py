@@ -8,12 +8,15 @@ import cPickle as pickle
 from temporal_cnn import train_temporal_model
 from spatial_cnn import train_spatial_model
 from config import get_parameter
+from stream_data import stack_optical_flow
 
 parameter = get_parameter()
 pickle_directory = parameter['pickle_directory']
+file_directory = parameter['file_directory']
 
 
 def train():
+    stack_optical_flow(file_directory, data_update=False)
     with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
         class_index_dict = pickle.load(fr)
     num_of_classes = len(class_index_dict) / 2

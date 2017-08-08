@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+
+# -----------------------------------------------------
+# Data pre-processing
+# -----------------------------------------------------
+
 from __future__ import print_function
 
 import cPickle as pickle
@@ -20,17 +25,18 @@ img_cols = parameter['img_cols']
 
 file_directory = parameter['file_directory']
 pickle_directory = parameter['pickle_directory']
+img_directory = parameter['img_directory']
 index_directory = parameter['index_directory']
 
 sample_freq_of_motion = parameter['sample_freq_of_motion']
 split_selection = parameter['split_selection']
 
-# file_name = 'v_Archery_g01_c07.avi'
+file_name = 'v_Archery_g01_c07.avi'
 # file_name = 'v_Skiing_g21_c01.avi'
 
 data_update = False  # True / False
 
-test_program_flag = 10  # only for testing program
+# test_program_flag = 10  # only for testing program
 
 
 def draw_flow(img, flow, step=16):
@@ -46,9 +52,21 @@ def draw_flow(img, flow, step=16):
     return vis
 
 
-def create_optical_flow(video_file, sample_freq_of_motion):
+def create_optical_flow(video_file, video_dict, sample_freq_of_motion):
     # video_file: the directory and file name of video
     cap = cv2.VideoCapture(video_file)
+    video_name = video_file.split('/')[-1].split('.')[0]
+    class_name = video_name.split('_')[1]
+    img_path = img_directory + '%s/' % class_name  # path to save this video
+
+    # create video list
+    # ---------------------------
+    # video_dict: all detail parts of this video, include all of the optical flow splits
+    if 'hori' not in video_dict:
+        video_dict['hori'] = list()
+    if 'vert' not in video_dict:
+        video_dict['vert'] = list()
+    # ---------------------------
 
     frame_set = dict()
     frame_set['orig'] = list()
@@ -90,13 +108,23 @@ def create_optical_flow(video_file, sample_freq_of_motion):
                                      cv2.mean(frame_set['flow'][-1][..., 1])[0] * np.ones(frame_set['flow'][-1][..., 1].shape))
 
             # change range to 0~255
-            # frame_set['hori'][-1] = cv2.normalize(frame_set['hori'][-1], None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
-            # frame_set['vert'][-1] = cv2.normalize(frame_set['vert'][-1], None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
+            frame_set['hori'][-1] = cv2.normalize(frame_set['hori'][-1], None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
+            frame_set['vert'][-1] = cv2.normalize(frame_set['vert'][-1], None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
 
             # Display flow
             # cv2.imshow('frame', frame_set['hori'][-1])
             # cv2.imshow('frame', frame_set['vert'][-1])
             # cv2.waitKey(25)
+
+            # write the frame
+            if not os.path.exists(img_path):
+                os.mkdir(img_path)
+            cv2.imwrite(img_path + 'hori_%s_%d.jpg' % (video_name, count), frame_set['hori'][-1])
+            cv2.imwrite(img_path + 'vert_%s_%d.jpg' % (video_name, count), frame_set['vert'][-1])
+
+            # record video file name
+            video_dict['hori'].append('hori_%s_%d.jpg' % (video_name, count))
+            video_dict['vert'].append('vert_%s_%d.jpg' % (video_name, count))
         # ----------------------------------------------------------------------
 
         # Display the resulting frame
@@ -108,12 +136,11 @@ def create_optical_flow(video_file, sample_freq_of_motion):
     # When everything done, release the capture
     cap.release()
     cv2.destroyAllWindows()
-
-    return frame_set
+    del frame_set
 
 
 def stack_optical_flow(file_directory, data_update=False):
-    # create dictionary of classes and indices
+    # create dictionary of classes and indices for all videos
     # ------------------------------------------------
     with open(index_directory + 'classInd.txt', 'r') as fr:
         lines = fr.readlines()
@@ -122,7 +149,7 @@ def stack_optical_flow(file_directory, data_update=False):
     class_index_dict = dict()
     classes_of_videos_dict = dict()
     for i in range(len(class_index)):
-        classes_of_videos_dict[class_index[i][1]] = list()
+        classes_of_videos_dict[class_index[i][1]] = dict()
         class_index_dict[class_index[i][0]] = class_index[i][1]
         class_index_dict[class_index[i][1]] = class_index[i][0]
 
@@ -136,18 +163,29 @@ def stack_optical_flow(file_directory, data_update=False):
     if os.path.exists(file_directory):
         if os.path.isdir(file_directory):
             file_list = os.listdir(file_directory)
-            pickle_list = os.listdir(pickle_directory)  # videos which already dump into puckle
+
+            # check videos is processed or not
+            # ---------------------------------------------------------
+            # pickle_list = os.listdir(pickle_directory)  # videos which already dump into pickle
+            # img_list = os.listdir(img_directory)  # videos which already dump into img file
+            img_list = list()
+            img_dir_list = os.listdir(img_directory)
+            for img_dir in img_dir_list:
+                img_list += os.listdir(img_directory+img_dir)
+            # ---------------------------------------------------------
+
             num_of_files = len(file_list)
 
             # for file_name in file_list:
-            for file_index in tqdm.tqdm(range(num_of_files)):  # test_program_flag
+            for file_index in tqdm.tqdm(range(num_of_files)):
                 file_name = file_list[file_index]
                 class_name = file_name.split('_')[1]
+                video_name = file_name.split('.')[0]
 
                 if file_name not in classes_of_videos_dict[class_name]:
-                    classes_of_videos_dict[class_name].append(file_name)
+                    classes_of_videos_dict[class_name][file_name] = dict()
 
-                if not data_update and (file_name + '.pickle') in pickle_list:
+                if not data_update and ('hori_' + video_name + '.jpg') and ('vert_' + video_name + '.jpg') in img_list:
                     continue
 
                 video = dict()
@@ -155,39 +193,40 @@ def stack_optical_flow(file_directory, data_update=False):
 
                 # Allocate input data to temporal and spatial set
                 # ------------------------------------------------
-                def allocate_input_data(video_file):
-                    index = 0
-                    temporal_input_list = list()
-                    spatial_input_list = list()
+                def allocate_input_data(video_file, video_dict):
+                    # index = 0
+                    # temporal_input_list = list()
+                    # spatial_input_list = list()
 
-                    frame_input = create_optical_flow(video_file, sample_freq_of_motion)
-                    frame_input_len = np.min([len(frame_input['hori']), len(frame_input['vert'])])  # length should be the same
-                    for i in range(frame_input_len):
-                        if int(index + consecutive_frames) >= frame_input_len:
-                            break
-                        temporal_input = np.dstack(frame_input['hori'][index:index + consecutive_frames] +
-                                                   frame_input['vert'][index:index + consecutive_frames])
-                        spatial_input = frame_input['orig'][int(index + consecutive_frames // 2)]
-                        index += consecutive_frames
-
-                        temporal_input_list.append(temporal_input)
-                        spatial_input_list.append(spatial_input)
-                    return temporal_input_list, spatial_input_list
+                    create_optical_flow(video_file, video_dict, sample_freq_of_motion)
+                    # frame_input_len = np.min([len(frame_input['hori']), len(frame_input['vert'])])  # length should be the same
+                    # for i in range(frame_input_len):
+                    #     if int(index + consecutive_frames) >= frame_input_len:
+                    #         break
+                    #     temporal_input = np.dstack(frame_input['hori'][index:index + consecutive_frames] +
+                    #                                frame_input['vert'][index:index + consecutive_frames])
+                    #     spatial_input = frame_input['orig'][int(index + consecutive_frames // 2)]
+                    #     index += consecutive_frames
+                    #
+                    #     temporal_input_list.append(temporal_input)
+                    #     spatial_input_list.append(spatial_input)
+                    # return temporal_input_list, spatial_input_list
                 # ------------------------------------------------
-
-                temporal_input_list, spatial_input_list = allocate_input_data(file_directory + file_name)
-                video['input'] = dict()
-                video['input']['temporal'] = list()
-                video['input']['spatial'] = list()
-
-                for i in range(np.min([len(temporal_input_list), len(spatial_input_list)])):  # two list should have the same length
-                    video['input']['temporal'].append(temporal_input_list[i])
-                    video['input']['spatial'].append(spatial_input_list[i])
+                video_dict = classes_of_videos_dict[class_name][file_name]
+                allocate_input_data(file_directory + file_name, video_dict)
+                # temporal_input_list, spatial_input_list = allocate_input_data(file_directory + file_name)
+                # video['input'] = dict()
+                # video['input']['temporal'] = list()
+                # video['input']['spatial'] = list()
+                #
+                # for i in range(np.min([len(temporal_input_list), len(spatial_input_list)])):  # two list should have the same length
+                #     video['input']['temporal'].append(temporal_input_list[i])
+                #     video['input']['spatial'].append(spatial_input_list[i])
 
                 # save pickle
                 # ------------------------------------------------
-                with open(pickle_directory + '%s.pickle' % file_name, 'wb') as fw:
-                    pickle.dump(video, fw, protocol=pickle.HIGHEST_PROTOCOL)
+                # with open(pickle_directory + '%s.pickle' % file_name, 'wb') as fw:
+                #     pickle.dump(video, fw, protocol=pickle.HIGHEST_PROTOCOL)
                 # ------------------------------------------------
 
             with open(pickle_directory + 'classes_of_videos_dict.pickle', 'wb') as fw:
@@ -203,7 +242,8 @@ def stack_optical_flow(file_directory, data_update=False):
         exit()
     # -------------------------------------------------------------------
 
-
+"""
+# not be used now
 def get_data_set(class_index_dict, seed, sample_times, mini_batch=256, kind='train', data_update=False):
     # seed: shuffle seed
     # sample_times: which times of sampling
@@ -345,6 +385,7 @@ def get_data_set(class_index_dict, seed, sample_times, mini_batch=256, kind='tra
     # time_spent_printer(start_time, end_time)
 
     return data_set
+"""
 
 
 class data_set:
@@ -390,25 +431,51 @@ class data_set:
 
         with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
             self.class_index_dict = pickle.load(fr)
-            # -------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------
 
         # start_time = time.time()
         for i in tqdm.tqdm(range(len(data_index['name']))):
             # read videos
-            # --------------------------
-            video_name = data_index['name'][i]
-            class_name = video_name.split('_')[1]
-            # try:
-            with open(pickle_directory + '%s.pickle' % video_name, 'rb') as fr:
-                video = pickle.load(fr)
-            # except:
-            #     continue
-            # --------------------------
+            # ------------------------------------------------------------------------------------------------------
+            file_name = data_index['name'][i]
+            class_name = file_name.split('_')[1]
+            # video_name = file_name.split('.')[0]
+
+            # with open(pickle_directory + '%s.pickle' % file_name, 'rb') as fr:
+            #     video = pickle.load(fr)
+
+            video = dict()
+            video['flow'] = dict()
+            video['flow']['hori'] = list()
+            video['flow']['vert'] = list()
+            video['orig'] = list()
+
+            # temporal
+            # ------------------------------------------------------------------------------
+            for partial_file_name in self.classes_of_videos_dict[class_name][file_name]:
+                direc = partial_file_name.split('_')[0]
+                img = cv2.imread('%s%s/%s' % (img_directory, class_name, partial_file_name))
+                video['flow'][direc].append(img)
+            # ------------------------------------------------------------------------------
+
+            # spatial
+            # ------------------------------------------------------------------------------
+            while (True):
+                cap = cv2.VideoCapture(file_directory + file_name)
+                # Capture frame-by-frame
+                ret, frame = cap.read()
+
+                if not ret:  # end/pause of this video
+                    break
+
+                video['orig'].append(cv2.resize(frame, (img_rows, img_cols)))
+            # ------------------------------------------------------------------------------
+            # ------------------------------------------------------------------------------------------------------
 
             # Collect data
             # ----------------------------------------------------------------------
-            temporal_data_set = video['input']['temporal']
-            spatial_data_set = video['input']['spatial']
+            # temporal_data_set = video['input']['temporal']
+            # spatial_data_set = video['input']['spatial']
             data_label = int(self.class_index_dict[class_name]) - 1  # start from 0
             # ----------------------------------------------------------------------
 
@@ -416,20 +483,22 @@ class data_set:
             # -------------------------------------
             if class_name not in self.data_set:
                 self.data_set[class_name] = dict()
-            if 'input' not in self.data_set[class_name]:
-                self.data_set[class_name]['input'] = dict()
-            if 'temporal' not in self.data_set[class_name]['input']:
-                self.data_set[class_name]['input']['temporal'] = list()
-            if 'spatial' not in self.data_set[class_name]['input']:
-                self.data_set[class_name]['input']['spatial'] = list()
+            if file_name not in self.data_set[class_name]:
+                self.data_set[class_name][file_name] = dict()
+            if 'temporal' not in self.data_set[class_name][file_name]:
+                self.data_set[class_name][file_name]['temporal'] = dict()
+                self.data_set[class_name][file_name]['temporal']['hori'] = video['flow']['hori']
+                self.data_set[class_name][file_name]['temporal']['vert'] = video['flow']['vert']
+            if 'spatial' not in self.data_set[class_name][file_name]:
+                self.data_set[class_name][file_name]['spatial'] = video['orig']
             if 'label' not in self.data_set[class_name]:
                 self.data_set[class_name]['label'] = data_label
             # -------------------------------------
 
             # Randomly select one data from this video
             # ----------------------------------------------------------------------
-            self.data_set[class_name]['input']['temporal'].append(temporal_data_set)
-            self.data_set[class_name]['input']['spatial'].append(spatial_data_set)
+            # self.data_set[class_name]['input']['temporal'].append(temporal_data_set)
+            # self.data_set[class_name]['input']['spatial'].append(spatial_data_set)
             # ----------------------------------------------------------------------
             # only for test
             # if i > 500:
@@ -548,10 +617,10 @@ class data_set:
 
 
 if __name__ == "__main__":
-    # create_optical_flow(file_directory+file_name)
+    # create_optical_flow(file_directory+file_name, sample_freq_of_motion)
 
 
-    # stack_optical_flow(file_directory, data_update=data_update)  #create pickle for training and testing
+    # stack_optical_flow(file_directory, data_update=data_update)  # create pickle for training and testing
 
 
     with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
