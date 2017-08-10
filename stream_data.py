@@ -145,7 +145,7 @@ def stack_optical_flow(file_directory, data_update=False):
     # ------------------------------------------------
     with open(index_directory + 'classInd.txt', 'r') as fr:
         lines = fr.readlines()
-        class_index = [entry.replace('\r\n', '').split(' ') for entry in lines]
+        class_index = [entry.replace('\r', '').replace('\n', '').split(' ') for entry in lines]
 
     class_index_dict = dict()
     classes_of_videos_dict = dict()
