@@ -1,7 +1,7 @@
 import numpy as np
 import gc
 import random
-import cPickle as pickle
+import pickle
 
 from keras.layers import Input, Conv2D, MaxPooling2D
 from keras.layers.core import Dense, Dropout, Flatten, Activation
@@ -11,7 +11,7 @@ from keras.models import Model
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.utils import np_utils
 
-from stream_data import get_data_set, data_set
+from stream_data import data_set
 from config import get_parameter
 
 parameter = get_parameter()

@@ -3,7 +3,7 @@ from __future__ import print_function
 from keras import backend as K
 import gc
 import random
-import cPickle as pickle
+import pickle
 
 from temporal_cnn import train_temporal_model
 from spatial_cnn import train_spatial_model
