@@ -70,8 +70,8 @@ def train_spatial_model(class_index_dict, seed):
     batch_size = parameter['batch_size']
     iterations = parameter['iterations']
 
-    print('Start training.')
     # get data set
+    print('Get data set.')
     # -------------------------------------------------------
     # training set
     training_set = data_set(class_index_dict, kind='train')
@@ -85,6 +85,7 @@ def train_spatial_model(class_index_dict, seed):
 
     Y_test = np_utils.to_categorical(Y_test, num_classes)
     # -------------------------------------------------------
+    print('Start training.')
 
     for i in range(iterations):
         print('%dth iterations' % (i + 1))
