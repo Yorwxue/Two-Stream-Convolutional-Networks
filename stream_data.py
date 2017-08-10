@@ -6,7 +6,8 @@
 
 from __future__ import print_function
 
-import cPickle as pickle
+# import cPickle as pickle
+import pickle
 import numpy as np
 import os
 import cv2
@@ -155,7 +156,7 @@ def stack_optical_flow(file_directory, data_update=False):
 
     # save pickle
     with open(pickle_directory+'class_index_dict.pickle', 'wb') as fw:
-        pickle.dump(class_index_dict, fw, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(class_index_dict, fw)
     # ------------------------------------------------
 
     # make a list to record all videos in this directory
@@ -230,7 +231,7 @@ def stack_optical_flow(file_directory, data_update=False):
                 # ------------------------------------------------
 
             with open(pickle_directory + 'classes_of_videos_dict.pickle', 'wb') as fw:
-                pickle.dump(classes_of_videos_dict, fw, protocol=pickle.HIGHEST_PROTOCOL)
+                pickle.dump(classes_of_videos_dict, fw)
 
             print('Videos processed')
 
@@ -620,7 +621,7 @@ if __name__ == "__main__":
     # create_optical_flow(file_directory+file_name, sample_freq_of_motion)
 
 
-    # stack_optical_flow(file_directory, data_update=data_update)  # create pickle for training and testing
+    stack_optical_flow(file_directory, data_update=data_update)  # create pickle for training and testing
 
 
     with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:

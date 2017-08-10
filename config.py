@@ -25,6 +25,7 @@ parameter['split_selection'] = '01'  # '01', '02', '03'
 
 
 def get_parameter():
+    set_parameter()
     return parameter
 
 
