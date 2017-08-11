@@ -67,7 +67,7 @@ def cnn_temporal(lr):
     return model
 
 
-def train_temporal_model(class_index_dict, seed):
+def train_temporal_model(class_index_dict):
     batch_size = parameter['batch_size']
     iterations = parameter['iterations']
 
@@ -80,7 +80,7 @@ def train_temporal_model(class_index_dict, seed):
     # testing set
     # testing_set = get_data_set(class_index_dict, seed, 0, mini_batch=256, kind='test')
     testing_set = data_set(class_index_dict, kind='test')
-    test_minibatch = testing_set.get_minibatch(seed, 0, mini_batch=256)
+    test_minibatch = testing_set.get_minibatch(0, mini_batch=256)
     X_test = np.array(test_minibatch['input']['temporal'])
     Y_test = np.array(test_minibatch['label'], dtype=np.float32)
 
@@ -104,7 +104,7 @@ def train_temporal_model(class_index_dict, seed):
         # get training data
         # -------------------------------------------------------
         # training_set = get_data_set(class_index_dict, seed, i, mini_batch=256, kind='train')
-        train_minibatch = training_set.get_minibatch(seed, i, mini_batch=256)
+        train_minibatch = training_set.get_minibatch(i, mini_batch=256)
         X_train = np.array(train_minibatch['input']['temporal'])
         Y_train = np.array(train_minibatch['label'], dtype=np.float32)
 
@@ -151,5 +151,5 @@ if __name__ == "__main__":
     with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
         class_index_dict = pickle.load(fr)
     num_of_classes = len(class_index_dict) / 2
-    seed = [random.random() for i in range(num_of_classes)]
-    train_temporal_model(class_index_dict, seed)
+    # seed = [random.random() for i in range(num_of_classes)]
+    train_temporal_model(class_index_dict)

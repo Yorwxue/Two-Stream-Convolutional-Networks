@@ -179,14 +179,25 @@ def stack_optical_flow(file_directory, data_update=False):
 
             # for file_name in file_list:
             for file_index in tqdm.tqdm(range(num_of_files)):
-                file_name = file_list[file_index]
+                file_name = file_list[file_index].replace('\r', '').replace('\n', '')
                 class_name = file_name.split('_')[1]
                 video_name = file_name.split('.')[0]
 
                 if file_name not in classes_of_videos_dict[class_name]:
                     classes_of_videos_dict[class_name][file_name] = dict()
+                    classes_of_videos_dict[class_name][file_name]['hori'] = list()
+                    classes_of_videos_dict[class_name][file_name]['vert'] = list()
 
-                if not data_update and ('hori_' + video_name + '.jpg') and ('vert_' + video_name + '.jpg') in img_list:
+                if not data_update and (('hori_' + video_name + '_1.jpg') in img_list) and \
+                        (('vert_' + video_name + '_1.jpg') in img_list):
+                    # create list
+                    # -------------
+                    optical_flow_list = os.listdir(img_directory + class_name)
+                    for optical_flow_file in optical_flow_list:
+                        direc = optical_flow_file.split('_')[0]
+                        if optical_flow_file not in classes_of_videos_dict[class_name][file_name][direc]:
+                            classes_of_videos_dict[class_name][file_name][direc].append(optical_flow_file)
+                    # -------------
                     continue
 
                 video = dict()
@@ -415,7 +426,7 @@ class data_set:
         for data_file in data_files_list:
             with open(index_directory + '%s' % data_file, 'r') as fr:
                 lines = fr.readlines()
-                data_index['name'] += [entry.split(' ')[0][entry.split(' ')[0].index('/') + 1:].replace('\r\n', '') for entry in lines]
+                data_index['name'] += [entry.split(' ')[0][entry.split(' ')[0].index('/') + 1:].replace('\n', '').replace('\n', '') for entry in lines]
 
                 # a bug of data set split provided by UCF101
                 # ----------------------------------------------------------------------

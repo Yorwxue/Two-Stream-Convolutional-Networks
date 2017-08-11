@@ -19,11 +19,11 @@ def train():
     stack_optical_flow(file_directory, data_update=False)
     with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
         class_index_dict = pickle.load(fr)
-    num_of_classes = len(class_index_dict) / 2
-    seed = [random.random() for i in range(num_of_classes)]
+    num_of_classes = int(len(class_index_dict) / 2)
+    # seed = [random.random() for i in range(num_of_classes)]
 
     print('Training temporal model.')
-    train_temporal_model(class_index_dict, seed)
+    train_temporal_model(class_index_dict)
     gc.collect()
 
     # release memory
@@ -33,8 +33,8 @@ def train():
     # K.set_session(sess)
     # ------------------------
 
-    print('Training spatial model.')
-    train_spatial_model(class_index_dict, seed)
+    # print('Training spatial model.')
+    # train_spatial_model(class_index_dict)
     # gc.collect()
 
     print('ok.')
