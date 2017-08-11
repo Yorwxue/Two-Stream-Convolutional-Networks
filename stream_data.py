@@ -192,11 +192,11 @@ def stack_optical_flow(file_directory, data_update=False):
                         (('vert_' + video_name + '_1.jpg') in img_list):
                     # create list
                     # -------------
-                    optical_flow_list = os.listdir(img_directory + class_name)
-                    for optical_flow_file in optical_flow_list:
-                        direc = optical_flow_file.split('_')[0]
-                        if optical_flow_file not in classes_of_videos_dict[class_name][file_name][direc]:
-                            classes_of_videos_dict[class_name][file_name][direc].append(optical_flow_file)
+                    # optical_flow_list = os.listdir(img_directory + class_name)
+                    # for optical_flow_file in optical_flow_list:
+                    #     direc = optical_flow_file.split('_')[0]
+                    #     if optical_flow_file not in classes_of_videos_dict[class_name][file_name][direc]:
+                    #         classes_of_videos_dict[class_name][file_name][direc].append(optical_flow_file)
                     # -------------
                     continue
 
