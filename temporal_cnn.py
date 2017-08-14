@@ -22,7 +22,7 @@ img_cols = parameter['img_cols']
 num_classes = parameter['num_classes']
 
 
-def cnn_temporal(lr):
+def cnn_temporal(lr=1e-2):
     # img_rows = 224
     # img_cols = 224
     # consecutive_frames = 10  # signal as L in the paper
@@ -94,10 +94,10 @@ def train_temporal_model(class_index_dict):
         # load model
         # ---------------------------------------------------------
         if i == 0:
-            model = cnn_temporal(1e-2)
+            model = cnn_temporal(lr=1e-2)
         if i == 14000:
             del model
-            model = cnn_temporal(1e-3)
+            model = cnn_temporal(lr=1e-3)
             model.load_weights(root_path + 'model/temporal_model')
         # ---------------------------------------------------------
 
@@ -146,10 +146,38 @@ def train_temporal_model(class_index_dict):
     del model, X_train, Y_train
     gc.collect()
 
+
+def temporal_model_predict(class_index_dict):
+    batch_size = parameter['batch_size']
+
+    # load model
+    model = cnn_temporal()
+    model.load_weights(root_path + 'model/temporal_model')
+
+    # testing set
+    # ----------------------------------------------------------------------------
+    testing_set = data_set(class_index_dict, kind='test')
+    test_minibatch = testing_set.get_minibatch(0, mini_batch=256)
+    X_test = np.array(test_minibatch['input']['temporal'])
+    Y_test = np.array(test_minibatch['label'], dtype=np.float32)
+
+    Y_test = np_utils.to_categorical(Y_test, num_classes)
+    # ----------------------------------------------------------------------------
+
+    # evaluate
+    # -----------------------------------------------------------
+    pred = model.predict(X_test, batch_size=batch_size)
+    pred = np.array([np.argmax(i) for i in pred])
+    print('accuracy: %.5f' % (np.sum(pred == Y_test) / len(Y_test)))
+    # -----------------------------------------------------------
+
+
 if __name__ == "__main__":
     pickle_directory = parameter['pickle_directory']
     with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
         class_index_dict = pickle.load(fr)
     num_of_classes = len(class_index_dict) / 2
     # seed = [random.random() for i in range(num_of_classes)]
-    train_temporal_model(class_index_dict)
+    # train_temporal_model(class_index_dict)
+
+    temporal_model_predict(class_index_dict)
