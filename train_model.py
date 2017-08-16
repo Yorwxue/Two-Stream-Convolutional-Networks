@@ -16,7 +16,7 @@ file_directory = parameter['file_directory']
 
 
 def train():
-    stack_optical_flow(file_directory, data_update=False)
+    # stack_optical_flow(file_directory, data_update=False)
     with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
         class_index_dict = pickle.load(fr)
     num_of_classes = int(len(class_index_dict) / 2)

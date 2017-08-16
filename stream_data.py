@@ -464,7 +464,7 @@ class data_set:
 
             # temporal
             # ------------------------------------------------------------------------------
-            for direc in self.classes_of_videos_dict[class_name][file_name]:
+            for direc in self.classes_of_videos_dict[class_name][file_name].keys():
                 for partial_file_name in self.classes_of_videos_dict[class_name][file_name][direc]:
                     img = cv2.cvtColor(
                         cv2.imread('%s%s/%s' % (img_directory, class_name, partial_file_name)),  # frame which will be gray
@@ -572,14 +572,24 @@ class data_set:
                 if model == 'temporal':
                     temporal_data_set = self.data_set[class_name][file_name][model]['hori'][video_flag:video_flag + consecutive_frames] + \
                                         self.data_set[class_name][file_name][model]['vert'][video_flag:video_flag + consecutive_frames]
+                    # re-allocation from [channel, img_row, img_column] to [img_row, img_column, channel]
+                    # -------------------------
+                    temporal_data_set = np.array(temporal_data_set)
+                    temporal_data_set = np.swapaxes(temporal_data_set, 0, 1)
+                    temporal_data_set = np.swapaxes(temporal_data_set, 1, 2)
+                    # -------------------------
+                    get_data['input']['temporal'].append(temporal_data_set)
                 else:
                     spatial_data_set = self.data_set[class_name][file_name][model][video_flag]
+                    get_data['input']['spatial'].append(spatial_data_set)
+
+                data_label = int(self.data_set[class_name]['label']) - 1  # start from 0
                 # ----------------------------------------------------------------------
 
                 # Randomly select one data from this video
                 # ---------------------------------------------------------------------
-                get_data['input']['temporal'].append(temporal_data_set)
-                get_data['input']['spatial'].append(spatial_data_set)
+                # get_data['input']['temporal'].append(temporal_data_set)
+                # get_data['input']['spatial'].append(spatial_data_set)
                 get_data['label'].append(data_label)
                 # ----------------------------------------------------------------------
             # --------------------------------------------------------------------------
@@ -597,16 +607,20 @@ class data_set:
                 try:
                     # Collect data
                     # ----------------------------------------------------------------------
-                    temporal_data_set = self.data_set[class_name][file_name][model]['hori']['temporal'][random_video_flag] + \
-                                        self.data_set[class_name][file_name][model]['vert']['temporal'][random_video_flag]
-                    spatial_data_set = self.data_set[class_name][file_name][model][video_flag]
+                    if model == 'temporal':
+                        temporal_data_set = self.data_set[class_name][file_name][model]['hori']['temporal'][random_video_flag] + \
+                                            self.data_set[class_name][file_name][model]['vert']['temporal'][random_video_flag]
+                        get_data['input']['temporal'].append(temporal_data_set)
+                    else:
+                        spatial_data_set = self.data_set[class_name][file_name][model][video_flag]
+                        get_data['input']['spatial'].append(spatial_data_set)
                     data_label = int(self.data_set[class_name]['label']) - 1  # start from 0
                     # ----------------------------------------------------------------------
 
                     # Randomly select one data from this video
                     # ----------------------------------------------------------------------
-                    get_data['input']['temporal'].append(temporal_data_set)
-                    get_data['input']['spatial'].append(spatial_data_set)
+                    # get_data['input']['temporal'].append(temporal_data_set)
+                    # get_data['input']['spatial'].append(spatial_data_set)
                     get_data['label'].append(data_label)
                     # ----------------------------------------------------------------------
                 except:
