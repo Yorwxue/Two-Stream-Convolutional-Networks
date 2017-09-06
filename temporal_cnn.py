@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import gc
 import random
 import pickle
@@ -80,12 +81,12 @@ def train_temporal_model(class_index_dict):
     # testing set
     # testing_set = get_data_set(class_index_dict, seed, 0, mini_batch=256, kind='test')
     testing_set = data_set(class_index_dict, kind='test')
-    test_minibatch = testing_set.get_minibatch(0, mini_batch=256)
+    test_minibatch = testing_set.get_minibatch(0, mini_batch=3783)
     X_test = np.array(test_minibatch['input']['temporal'])
-    Y_test = np.array(test_minibatch['label'], dtype=np.float32)
-
+    Y_test = np.array(test_minibatch['label'])
     Y_test = np_utils.to_categorical(Y_test, num_classes)
     # -------------------------------------------------------
+
     print('Start training.')
 
     for i in range(iterations):
@@ -95,9 +96,15 @@ def train_temporal_model(class_index_dict):
         # ---------------------------------------------------------
         if i == 0:
             model = cnn_temporal(lr=1e-2)
-        if i == 14000:
+            # if os.path.exists(root_path + 'model/temporal_model'):
+            #     model.load_weights(root_path + 'model/temporal_model')
+        if i == 50000:
             del model
             model = cnn_temporal(lr=1e-3)
+            model.load_weights(root_path + 'model/temporal_model')
+        if i == 70000:
+            del model
+            model = cnn_temporal(lr=1e-4)
             model.load_weights(root_path + 'model/temporal_model')
         # ---------------------------------------------------------
 

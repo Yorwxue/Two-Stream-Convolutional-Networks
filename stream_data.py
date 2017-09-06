@@ -540,58 +540,61 @@ class data_set:
 
             # Samples from each class
             # --------------------------------------------------------------------------
-            for j in range(num_of_samples_of_each_class):
-                # select one split into training data
-                # ----------------------------------------------------------------------
-                # Select one video
-                num_of_videos_in_this_class = len(self.data_set[class_name])
-                videos_in_this_class = sorted(self.data_set[class_name].keys())
-                videos_in_this_class.pop(videos_in_this_class.index('label'))
-                video_selection = j + sample_times * num_of_samples_of_each_class
-                if video_selection >= num_of_videos_in_this_class:
-                    video_selection = np.random.randint(0, num_of_videos_in_this_class)
-                file_name = videos_in_this_class[video_selection]
+            try:
+                for j in range(num_of_samples_of_each_class):
+                    # select one split into training data
+                    # ----------------------------------------------------------------------
+                    # Select one video
+                    num_of_videos_in_this_class = len(self.data_set[class_name])
+                    videos_in_this_class = sorted(self.data_set[class_name].keys())
+                    videos_in_this_class.pop(videos_in_this_class.index('label'))
+                    video_selection = j + sample_times * num_of_samples_of_each_class
+                    if video_selection >= num_of_videos_in_this_class:
+                        video_selection = np.random.randint(0, num_of_videos_in_this_class)
+                    file_name = videos_in_this_class[video_selection]
 
-                # video_flag: one video can split into several data, using flag to decide which split
-                num_of_optical_flow_frame = len(self.data_set[class_name][file_name][model]['hori'])
-                video_flag = np.random.randint(0, num_of_optical_flow_frame - consecutive_frames)  # j + sample_times * num_of_samples_of_each_class
+                    # video_flag: one video can split into several data, using flag to decide which split
+                    num_of_optical_flow_frame = len(self.data_set[class_name][file_name][model]['hori'])
+                    video_flag = np.random.randint(0, num_of_optical_flow_frame - consecutive_frames)  # j + sample_times * num_of_samples_of_each_class
 
-                # Check where all split are been selected for at least once times
-                # ---------------------------
-                # num_of_optical_flow_frame = len(self.data_set[class_name][file_name][model]['hori'])
-                # if model == 'temporal' and video_flag > (num_of_optical_flow_frame - consecutive_frames):
-                #     video_flag = np.random.randint(0, num_of_optical_flow_frame - consecutive_frames)
-                # if model == 'spatial' and video_flag > num_of_optical_flow_frame:
-                #     video_flag = np.random.randint(0, num_of_optical_flow_frame)
-                # ---------------------------
+                    # Check where all split are been selected for at least once times
+                    # ---------------------------
+                    # num_of_optical_flow_frame = len(self.data_set[class_name][file_name][model]['hori'])
+                    # if model == 'temporal' and video_flag > (num_of_optical_flow_frame - consecutive_frames):
+                    #     video_flag = np.random.randint(0, num_of_optical_flow_frame - consecutive_frames)
+                    # if model == 'spatial' and video_flag > num_of_optical_flow_frame:
+                    #     video_flag = np.random.randint(0, num_of_optical_flow_frame)
+                    # ---------------------------
 
-                # ----------------------------------------------------------------------
+                    # ----------------------------------------------------------------------
 
-                # Collect data
-                # ----------------------------------------------------------------------
-                if model == 'temporal':
-                    temporal_data_set = self.data_set[class_name][file_name][model]['hori'][video_flag:video_flag + consecutive_frames] + \
-                                        self.data_set[class_name][file_name][model]['vert'][video_flag:video_flag + consecutive_frames]
-                    # re-allocation from [channel, img_row, img_column] to [img_row, img_column, channel]
-                    # -------------------------
-                    temporal_data_set = np.array(temporal_data_set)
-                    temporal_data_set = np.swapaxes(temporal_data_set, 0, 1)
-                    temporal_data_set = np.swapaxes(temporal_data_set, 1, 2)
-                    # -------------------------
-                    get_data['input']['temporal'].append(temporal_data_set)
-                else:
-                    spatial_data_set = self.data_set[class_name][file_name][model][video_flag]
-                    get_data['input']['spatial'].append(spatial_data_set)
+                    # Collect data
+                    # ----------------------------------------------------------------------
+                    if model == 'temporal':
+                        temporal_data_set = self.data_set[class_name][file_name][model]['hori'][video_flag:video_flag + consecutive_frames] + \
+                                            self.data_set[class_name][file_name][model]['vert'][video_flag:video_flag + consecutive_frames]
+                        # re-allocation from [channel, img_row, img_column] to [img_row, img_column, channel]
+                        # -------------------------
+                        temporal_data_set = np.array(temporal_data_set)
+                        temporal_data_set = np.swapaxes(temporal_data_set, 0, 1)
+                        temporal_data_set = np.swapaxes(temporal_data_set, 1, 2)
+                        # -------------------------
+                        get_data['input']['temporal'].append(temporal_data_set)
+                    else:
+                        spatial_data_set = self.data_set[class_name][file_name][model][video_flag]
+                        get_data['input']['spatial'].append(spatial_data_set)
 
-                data_label = int(self.data_set[class_name]['label']) - 1  # start from 0
-                # ----------------------------------------------------------------------
+                    data_label = int(self.data_set[class_name]['label']) - 1  # start from 0
+                    # ----------------------------------------------------------------------
 
-                # Randomly select one data from this video
-                # ---------------------------------------------------------------------
-                # get_data['input']['temporal'].append(temporal_data_set)
-                # get_data['input']['spatial'].append(spatial_data_set)
-                get_data['label'].append(data_label)
-                # ----------------------------------------------------------------------
+                    # Randomly select one data from this video
+                    # ---------------------------------------------------------------------
+                    # get_data['input']['temporal'].append(temporal_data_set)
+                    # get_data['input']['spatial'].append(spatial_data_set)
+                    get_data['label'].append(data_label)
+                    # ----------------------------------------------------------------------
+            except:
+                None
             # --------------------------------------------------------------------------
 
             # Random sample
@@ -601,7 +604,11 @@ class data_set:
 
                 # Randomly select one video
                 # ----------------------------------------------------------------------
-                random_video_flag = np.random.randint(0, num_of_optical_flow_frame - consecutive_frames)
+                try:
+                    num_of_optical_flow_frame = len(self.data_set[class_name][file_name][model]['hori'])
+                    random_video_flag = np.random.randint(0, num_of_optical_flow_frame - consecutive_frames)
+                except:
+                    continue
                 # ----------------------------------------------------------------------
 
                 try:
@@ -612,7 +619,7 @@ class data_set:
                                             self.data_set[class_name][file_name][model]['vert']['temporal'][random_video_flag]
                         get_data['input']['temporal'].append(temporal_data_set)
                     else:
-                        spatial_data_set = self.data_set[class_name][file_name][model][video_flag]
+                        spatial_data_set = self.data_set[class_name][file_name][model][random_video_flag]
                         get_data['input']['spatial'].append(spatial_data_set)
                     data_label = int(self.data_set[class_name]['label']) - 1  # start from 0
                     # ----------------------------------------------------------------------

@@ -19,7 +19,7 @@ def train():
     # stack_optical_flow(file_directory, data_update=False)
     with open(pickle_directory + 'class_index_dict.pickle', 'rb') as fr:
         class_index_dict = pickle.load(fr)
-    num_of_classes = int(len(class_index_dict) / 2)
+    # num_of_classes = int(len(class_index_dict) / 2)
     # seed = [random.random() for i in range(num_of_classes)]
 
     print('Training temporal model.')

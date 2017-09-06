@@ -1,5 +1,6 @@
 import numpy as np
 import gc
+import os
 import random
 import pickle
 
@@ -81,7 +82,7 @@ def train_spatial_model(class_index_dict):
     testing_set = data_set(class_index_dict, kind='test')
     test_minibatch = testing_set.get_minibatch(0, mini_batch=256)
     X_test = np.array(test_minibatch['input']['spatial'])
-    Y_test = np.array(test_minibatch['label'], dtype=np.float32)
+    Y_test = np.array(test_minibatch['label'])
 
     Y_test = np_utils.to_categorical(Y_test, num_classes)
     # -------------------------------------------------------
@@ -94,9 +95,15 @@ def train_spatial_model(class_index_dict):
         # ---------------------------------------------------------
         if i == 0:
             model = cnn_spatial(1e-2)
-        if i == 14000:
+            if os.path.exists(root_path + 'model/spatial_model'):
+                model.load_weights(root_path + 'model/spatial_model')
+        if i == 50000:
             del model
-            model = cnn_spatial(1e-3)
+            model = cnn_spatial(lr=1e-3)
+            model.load_weights(root_path + 'model/spatial_model')
+        if i == 70000:
+            del model
+            model = cnn_spatial(lr=1e-4)
             model.load_weights(root_path + 'model/spatial_model')
             # ---------------------------------------------------------
 

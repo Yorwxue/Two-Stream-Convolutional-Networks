@@ -13,8 +13,8 @@ parameter['img_cols'] = 224
 parameter['num_classes'] = 101
 parameter['sample_freq_of_motion'] = 1
 
-parameter['batch_size'] = 32
-parameter['iterations'] = 20000
+parameter['batch_size'] = 256  # 32
+parameter['iterations'] = 80000
 
 parameter['file_directory'] = parameter['file_root_path'] + 'UCF101/'
 parameter['pickle_directory'] = parameter['file_root_path'] + 'pickle/'
